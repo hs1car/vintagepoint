@@ -13,11 +13,6 @@ export async function GET() {
             model: true,
             year: true
           }
-        },
-        sparePart: {
-          select: {
-            name: true
-          }
         }
       }
     })
