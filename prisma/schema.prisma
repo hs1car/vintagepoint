@@ -41,6 +41,7 @@ model Car {
   description String?
   images      String     // JSON array of image URLs
   isActive    Boolean    @default(true)
+  isFeatured  Boolean    @default(false)  // Car of the week
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   inquiries   Inquiry[]

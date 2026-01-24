@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Lightbox from 'yet-another-react-lightbox'
 import 'yet-another-react-lightbox/styles.css'
 import { motion } from 'framer-motion'
-import { ZoomIn, Maximize2 } from 'lucide-react'
+import { ZoomIn, Maximize2, ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface ImageGalleryProps {
   images: string[]
@@ -54,14 +54,34 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
         ))}
       </div>
 
-      {/* Lightbox */}
+      {/* Lightbox with Swipe Support */}
       <Lightbox
         open={open}
         close={() => setOpen(false)}
         slides={slides}
         index={currentIndex}
-        animation={{ fade: 300 }}
-        carousel={{ finite: true }}
+        animation={{ fade: 300, swipe: 250 }}
+        carousel={{ 
+          finite: false,
+          preload: 2,
+        }}
+        controller={{
+          closeOnBackdropClick: true,
+          closeOnPullDown: true,
+          closeOnPullUp: true,
+        }}
+        render={{
+          buttonPrev: () => (
+            <button className="yarl__button yarl__navigation_prev">
+              <ChevronRight className="h-8 w-8" />
+            </button>
+          ),
+          buttonNext: () => (
+            <button className="yarl__button yarl__navigation_next">
+              <ChevronLeft className="h-8 w-8" />
+            </button>
+          ),
+        }}
         styles={{
           container: { backgroundColor: 'rgba(0, 0, 0, 0.95)' },
         }}
