@@ -94,6 +94,13 @@ export function Header() {
                 </button>
               </NavigationMenuItem>
               <NavigationMenuItem>
+                <Link href="/buying-guide">
+                  <button className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-gold-500/10 hover:text-gold-500 focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
+                    {isRTL ? 'دليل الشراء' : 'Buying Guide'}
+                  </button>
+                </Link>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
                 <button
                   onClick={() => scrollToSection('cars')}
                   className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-gold-500/10 hover:text-gold-500 focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
@@ -108,13 +115,6 @@ export function Header() {
                 >
                   {t('nav.parts')}
                 </button>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <Link href="/buying-guide">
-                  <button className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-gold-500/10 hover:text-gold-500 focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
-                    {isRTL ? 'دليل الشراء' : 'Buying Guide'}
-                  </button>
-                </Link>
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <Link href="/about">
@@ -267,6 +267,14 @@ export function Header() {
             className="md:hidden border-t border-gold-500/10"
           >
             <div className="container mx-auto px-4 py-4 space-y-3">
+              <Link href="/buying-guide">
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block w-full text-left py-2 px-4 rounded-md hover:bg-gold-500/10 hover:text-gold-500 transition-colors"
+                >
+                  {isRTL ? 'دليل الشراء' : 'Buying Guide'}
+                </button>
+              </Link>
               <button
                 onClick={() => scrollToSection('cars')}
                 className="block w-full text-left py-2 px-4 rounded-md hover:bg-gold-500/10 hover:text-gold-500 transition-colors"
