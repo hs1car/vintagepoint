@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "cross-env NEXT_PRIVATE_DISABLE_TURBOPACK=1 NEXT_USE_WASM_BINARY=1 next dev -p 3000",
-    "build": "prisma generate && next build",
+    "build": "prisma generate && prisma db push --accept-data-loss && node scripts/setup-production.js && next build",
     "build:copy": "xcopy /E /I /Y .next\\static .next\\standalone\\.next\\static && xcopy /E /I /Y public .next\\standalone\\public",
     "start": "node .next/standalone/server.js",
     "lint": "next lint",
