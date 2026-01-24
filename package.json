@@ -4,8 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "cross-env NEXT_PRIVATE_DISABLE_TURBOPACK=1 NEXT_USE_WASM_BINARY=1 next dev -p 3000",
-    "build": "prisma generate && prisma db push --accept-data-loss && node scripts/setup-production.js && next build",
+    "build": "prisma generate && next build",
+    "postbuild": "prisma db push --accept-data-loss --skip-generate || true",
     "build:copy": "xcopy /E /I /Y .next\\static .next\\standalone\\.next\\static && xcopy /E /I /Y public .next\\standalone\\public",
+    "prestart": "node scripts/setup-production.js || true",
     "start": "node .next/standalone/server.js",
     "lint": "next lint",
     "postinstall": "prisma generate",
