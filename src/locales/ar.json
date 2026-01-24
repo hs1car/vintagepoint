@@ -14,10 +14,10 @@
     "images": "صور | Images"
   },
   "nav": {
-    "home": "Home | الرئيسية",
-    "cars": "Classic Cars | السيارات الكلاسيكية",
-    "parts": "Spare Parts | قطع الغيار",
-    "about": "About Us | من نحن",
+    "home": "الرئيسية | Home",
+    "cars": "السيارات الكلاسيكية | Classic Cars",
+    "parts": "قطع الغيار | Spare Parts",
+    "about": "من نحن | About Us",
     "contact": "اتصل بنا | Contact",
     "admin": "الإدارة | Admin",
     "login": "تسجيل الدخول | Login",
