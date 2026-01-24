@@ -20,7 +20,7 @@ export function Header() {
   const { language, setLanguage, t, isRTL } = useLanguage()
   const { wishlist } = useWishlist()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [logoUrl, setLogoUrl] = useState('')
+  const [logoUrl, setLogoUrl] = useState('/logo.svg')
 
   const languages = [
     { code: 'ar', label: 'العربية' },
@@ -31,26 +31,18 @@ export function Header() {
   ]
 
   useEffect(() => {
-    // Try to load logo from settings API, fallback to static logo
+    // Try to load custom logo from settings API
     async function fetchSettings() {
       try {
         const res = await fetch('/api/settings')
         if (res.ok) {
           const data = await res.json()
-          if (data.logoUrl) {
+          if (data.logoUrl && data.logoUrl !== '/logo.svg') {
             setLogoUrl(data.logoUrl)
-          } else {
-            // Fallback to static logo if no custom logo in DB
-            setLogoUrl('/logo.svg')
           }
-        } else {
-          // Fallback to static logo if API fails
-          setLogoUrl('/logo.svg')
         }
       } catch (error) {
         console.error('Error fetching settings:', error)
-        // Fallback to static logo on error
-        setLogoUrl('/logo.svg')
       }
     }
     fetchSettings()
