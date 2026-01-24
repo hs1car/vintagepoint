@@ -24,14 +24,14 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
 
   return (
     <>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
         {images.map((image, index) => (
           <motion.div
             key={index}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: index * 0.1 }}
-            className="relative group cursor-pointer overflow-hidden rounded-lg border border-gold-500/20 hover:border-gold-500/50 transition-all"
+            transition={{ delay: index * 0.05 }}
+            className="relative group cursor-pointer overflow-hidden rounded-md border border-gold-500/20 hover:border-gold-500/50 transition-all"
             onClick={() => openLightbox(index)}
           >
             <div className="aspect-square relative">
@@ -41,12 +41,11 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
               {/* Overlay on hover */}
-              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
-                <ZoomIn className="h-8 w-8 text-white" />
-                <Maximize2 className="h-8 w-8 text-white" />
+              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-1">
+                <ZoomIn className="h-5 w-5 text-white" />
               </div>
               {/* Image number badge */}
-              <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded-md text-xs">
+              <div className="absolute top-1 right-1 bg-black/70 text-white px-1.5 py-0.5 rounded text-[10px]">
                 {index + 1}/{images.length}
               </div>
             </div>

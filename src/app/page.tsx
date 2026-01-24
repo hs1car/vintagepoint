@@ -43,6 +43,13 @@ export default function Home() {
   const [expandedPartDetails, setExpandedPartDetails] = useState<{ [key: string]: boolean }>({})
 
   useEffect(() => {
+    // Track page view
+    fetch('/api/analytics/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ page: '/' })
+    }).catch(() => {})
+
     async function fetchData() {
       try {
         const [carsRes, partsRes] = await Promise.all([

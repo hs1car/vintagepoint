@@ -89,3 +89,32 @@ model Wishlist {
   @@unique([sessionId, carId])
   @@unique([userId, carId])
 }
+
+model PageView {
+  id         String   @id @default(cuid())
+  page       String   // e.g., "/", "/cars/123", "/parts/456"
+  entityType String?  // "car", "part", "page"
+  entityId   String?  // car ID or part ID
+  ipAddress  String?
+  userAgent  String?
+  referrer   String?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([page])
+  @@index([createdAt])
+}
+
+model AnalyticsEvent {
+  id         String   @id @default(cuid())
+  eventType  String   // "view", "click", "inquiry", "wishlist_add"
+  entityType String?  // "car", "part"
+  entityId   String?
+  metadata   String?  // JSON for extra data
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  @@index([eventType])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}

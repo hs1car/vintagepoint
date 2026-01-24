@@ -21,6 +21,8 @@ export function Header() {
   const { wishlist } = useWishlist()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [logoUrl, setLogoUrl] = useState('/logo.svg')
+  const [isVisible, setIsVisible] = useState(true)
+  const [lastScrollY, setLastScrollY] = useState(0)
 
   const languages = [
     { code: 'ar', label: 'العربية' },
@@ -48,6 +50,29 @@ export function Header() {
     fetchSettings()
   }, [])
 
+  // Auto-hide header on scroll down
+  useEffect(() => {
+    const controlHeader = () => {
+      const currentScrollY = window.scrollY
+
+      if (currentScrollY < 10) {
+        // Always show at top
+        setIsVisible(true)
+      } else if (currentScrollY > lastScrollY) {
+        // Scrolling down - hide
+        setIsVisible(false)
+      } else {
+        // Scrolling up - show
+        setIsVisible(true)
+      }
+
+      setLastScrollY(currentScrollY)
+    }
+
+    window.addEventListener('scroll', controlHeader)
+    return () => window.removeEventListener('scroll', controlHeader)
+  }, [lastScrollY])
+
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId)
     if (element) {
@@ -57,7 +82,11 @@ export function Header() {
   }
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-[100] w-full border-b border-gold-500/30 bg-gradient-to-b from-black/98 to-black/95 backdrop-blur-md shadow-[0_4px_20px_-5px_rgba(0,0,0,0.5)]">
+    <header 
+      className={`fixed top-0 left-0 right-0 z-[100] w-full border-b border-gold-500/30 bg-gradient-to-b from-black/98 to-black/95 backdrop-blur-md shadow-[0_4px_20px_-5px_rgba(0,0,0,0.5)] transition-transform duration-300 ${
+        isVisible ? 'translate-y-0' : '-translate-y-full'
+      }`}
+    >
       {/* Single Compact Navigation Bar */}
       <div className="container mx-auto px-4">
         <div className="flex h-16 md:h-18 items-center justify-between gap-3">

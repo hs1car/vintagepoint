@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   ArrowRight,
   Settings,
+  BarChart3,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -35,9 +36,10 @@ export default function AdminDashboard() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [carsRes, partsRes] = await Promise.all([
+        const [carsRes, partsRes, inquiriesRes] = await Promise.all([
           fetch('/api/cars?includeInactive=true'),
-          fetch('/api/parts?includeInactive=true')
+          fetch('/api/parts?includeInactive=true'),
+          fetch('/api/inquiries')
         ])
 
         if (carsRes.ok) {
@@ -48,6 +50,11 @@ export default function AdminDashboard() {
         if (partsRes.ok) {
           const parts = await partsRes.json()
           setStats(prev => ({ ...prev, totalParts: parts.length }))
+        }
+
+        if (inquiriesRes.ok) {
+          const inquiries = await inquiriesRes.json()
+          setStats(prev => ({ ...prev, totalInquiries: inquiries.length }))
         }
       } catch (error) {
         console.error('Error fetching dashboard stats:', error)
@@ -176,6 +183,17 @@ export default function AdminDashboard() {
             إجراءات سريعة | Quick Actions
           </h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Button
+              onClick={() => router.push('/admin/analytics')}
+              className="flex h-full flex-col items-center justify-center gap-3 bg-gradient-to-br from-purple-600 to-purple-400 hover:from-purple-700 hover:to-purple-500 text-white py-8"
+            >
+              <BarChart3 className="h-8 w-8" />
+              <span className="font-semibold">
+                لوحة التحليلات<br />
+                <span className="text-sm font-normal">Analytics Dashboard</span>
+              </span>
+            </Button>
+
             <Button
               onClick={() => router.push('/admin/cars/new')}
               className="flex h-full flex-col items-center justify-center gap-3 bg-gold-500 hover:bg-gold-600 text-black py-8"
