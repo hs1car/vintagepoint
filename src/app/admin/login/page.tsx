@@ -71,12 +71,12 @@ export default function AdminLogin() {
               <div className="space-y-2">
                 <Label htmlFor="email" className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-gold-500" />
-                  البريد الإلكتروني | Email
+                  اسم المستخدم | Username
                 </Label>
                 <Input
                   id="email"
-                  type="email"
-                  placeholder="admin@vintagepoint.ae"
+                  type="text"
+                  placeholder="vp"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
