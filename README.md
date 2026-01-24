@@ -46,6 +46,10 @@ npm start
 
 Google Maps: [Vintage Point LLC](https://maps.app.goo.gl/ajpHTNU2GjwKdJHw7)
 
+## 👨‍💻 Developer
+
+**Mohamed Hussein**
+
 ---
 
 Built with ❤️ by Vintage Point LLC
