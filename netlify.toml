@@ -1,0 +1,11 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[build.environment]
+  NEXT_PUBLIC_WHATSAPP_NUMBER = "971569141444"
+  NEXT_PUBLIC_PHONE_NUMBER = "971564487448"
+  NEXT_PUBLIC_EMAIL = "vintagepoint1444@gmail.com"
