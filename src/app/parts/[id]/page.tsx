@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { db } from '@/lib/db'
+import { ImageGallery } from '@/components/ImageGallery'
 
 interface PageProps {
   params: {
@@ -99,34 +100,13 @@ export default async function PartPage({ params }: PageProps) {
       <section className="py-12 bg-gradient-to-b from-background to-black/30">
         <div className="container mx-auto px-4">
           <div className="grid gap-8 lg:grid-cols-2">
-            {/* Images */}
+            {/* Images Gallery */}
             <div className="space-y-4">
               {images.length > 0 ? (
-                <div className="aspect-square overflow-hidden rounded-xl border-2 border-gold-500/20 bg-gradient-to-br from-black/20 to-black/10">
-                  <img
-                    src={images[0]}
-                    alt={`${part.name} - Main Image`}
-                    className="w-full h-full object-contain p-4"
-                    loading="eager"
-                  />
-                </div>
+                <ImageGallery images={images} alt={part.name} />
               ) : (
                 <div className="aspect-square bg-muted flex items-center justify-center rounded-xl">
                   <span className="text-muted-foreground">No Images Available</span>
-                </div>
-              )}
-              {images.length > 1 && (
-                <div className="grid grid-cols-3 gap-3 sm:gap-4">
-                  {images.slice(1, 7).map((img, i) => (
-                    <div key={i} className="aspect-square overflow-hidden rounded-lg border border-gold-500/10 bg-black/20">
-                      <img
-                        src={img}
-                        alt={`${part.name} - Image ${i + 2}`}
-                        className="w-full h-full object-contain p-2 hover:scale-105 transition-transform duration-300"
-                        loading="lazy"
-                      />
-                    </div>
-                  ))}
                 </div>
               )}
             </div>
