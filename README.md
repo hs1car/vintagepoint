@@ -31,12 +31,7 @@ npm run build
 npm start
 ```
 
-## 📝 Admin Access
-
-- **Username**: vp
-- **Password**: root
-
-## 📧 Contact
+##  Contact
 
 - **WhatsApp**: +971 56 914 1444
 - **Phone**: +971 56 448 7448
