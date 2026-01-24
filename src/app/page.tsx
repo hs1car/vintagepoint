@@ -9,6 +9,8 @@ import { Card, CardContent } from '@/components/ui/card'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel'
 import { WishlistButton } from '@/components/WishlistButton'
+import CarSkeleton from '@/components/CarSkeleton'
+import { toast } from 'sonner'
 
 interface Car {
   id: string
@@ -231,14 +233,8 @@ export default function Home() {
 
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...Array(3)].map((_, i) => (
-                <Card key={i} className="border-gold-500/20 bg-card/50 backdrop-blur overflow-hidden">
-                  <div className="aspect-video bg-muted animate-pulse" />
-                  <CardContent className="p-6 space-y-4">
-                    <div className="h-4 bg-muted animate-pulse rounded" />
-                    <div className="h-3 bg-muted animate-pulse rounded w-2/3" />
-                  </CardContent>
-                </Card>
+              {[...Array(6)].map((_, i) => (
+                <CarSkeleton key={i} />
               ))}
             </div>
           ) : cars.length === 0 ? (
@@ -398,7 +394,7 @@ export default function Home() {
                                       alt={`${car.model} thumbnail ${imgIndex + 1}`}
                                       loading="lazy"
                                       decoding="async"
-                                      className="w-full h-full object-cover"
+                                      className="w-full h-full object-cover car-image-hover"
                                     />
                                   </button>
                                 ))}
@@ -638,7 +634,7 @@ export default function Home() {
                                     <img
                                       src={img}
                                       alt={`Thumbnail ${imgIndex + 1}`}
-                                      className="w-full h-full object-cover"
+                                      className="w-full h-full object-cover car-image-hover"
                                       loading="lazy"
                                     />
                                   </button>

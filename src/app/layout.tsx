@@ -8,6 +8,8 @@ import { ThemeProvider } from "next-themes";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { WhatsAppFloating } from "@/components/WhatsAppFloating";
+import BackToTop from "@/components/BackToTop";
+import { Toaster as Sonner } from "@/components/ui/sonner";
 
 const cairo = Cairo({
   subsets: ["arabic", "latin"],
@@ -86,7 +88,9 @@ export default function RootLayout({
               </main>
               <Footer />
               <WhatsAppFloating />
+              <BackToTop />
               <Toaster />
+              <Sonner />
             </LanguageProvider>
           </WishlistProvider>
         </ThemeProvider>
