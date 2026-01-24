@@ -31,6 +31,7 @@ export function Header() {
   ]
 
   useEffect(() => {
+    // Try to load logo from settings API, fallback to static logo
     async function fetchSettings() {
       try {
         const res = await fetch('/api/settings')
@@ -38,10 +39,18 @@ export function Header() {
           const data = await res.json()
           if (data.logoUrl) {
             setLogoUrl(data.logoUrl)
+          } else {
+            // Fallback to static logo if no custom logo in DB
+            setLogoUrl('/logo.svg')
           }
+        } else {
+          // Fallback to static logo if API fails
+          setLogoUrl('/logo.svg')
         }
       } catch (error) {
         console.error('Error fetching settings:', error)
+        // Fallback to static logo on error
+        setLogoUrl('/logo.svg')
       }
     }
     fetchSettings()
