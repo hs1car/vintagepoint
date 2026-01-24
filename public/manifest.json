@@ -1,0 +1,46 @@
+{
+  "name": "فينتج بوينت - سيارات كلاسيك في دبي | Vintage Point - Classic Cars in Dubai",
+  "short_name": "فينتج بوينت | Vintage Point",
+  "description": "اكتشف مجموعتنا المختارة بعناية من السيارات الكلاسيكية النادرة | Discover rare classic cars",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#D4AF37",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["automotive", "business"],
+  "shortcuts": [
+    {
+      "name": "تصفح السيارات | Browse Cars",
+      "short_name": "السيارات | Cars",
+      "description": "تصفح مجموعة السيارات الكلاسيكية | Browse classic car collection",
+      "url": "/#cars",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "قطع الغيار | Spare Parts",
+      "short_name": "القطع | Parts",
+      "description": "تصفح قطع الغيار الكلاسيكية | Browse classic car parts",
+      "url": "/#parts",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "اتصل بنا | Contact Us",
+      "short_name": "اتصل | Contact",
+      "description": "تواصل معنا عبر الهاتف أو واتساب | Contact us via phone or WhatsApp",
+      "url": "/#contact",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
