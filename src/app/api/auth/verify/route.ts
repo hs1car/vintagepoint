@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { devLog } from '@/lib/logger'
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
       admin
     })
   } catch (error) {
-    console.error('Verify session error:', error)
+    devLog.error('Verify session error:', error)
     return NextResponse.json({ authenticated: false }, { status: 500 })
   }
 }

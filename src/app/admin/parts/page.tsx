@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Plus, Edit2, Trash2, Search, Power, PowerOff, Wrench } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { PartSearchBar, type PartSearchFilters } from '@/components/admin/PartSearchBar'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,28 +33,46 @@ export default function AdminParts() {
   const router = useRouter()
   const [parts, setParts] = useState<SparePart[]>([])
   const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
+  const [totalCount, setTotalCount] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [currentFilters, setCurrentFilters] = useState<PartSearchFilters>({})
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; partId: string | null }>({
     open: false,
     partId: null
   })
 
   useEffect(() => {
-    fetchParts()
+    fetchParts(currentFilters, currentPage)
   }, [])
 
-  const fetchParts = async () => {
+  const fetchParts = async (filters: PartSearchFilters = {}, page: number = 1) => {
+    setLoading(true)
     try {
-      const res = await fetch('/api/parts')
+      const params = new URLSearchParams()
+      if (filters.query) params.append('q', filters.query)
+      if (filters.isActive !== undefined) params.append('isActive', filters.isActive.toString())
+      if (filters.sortBy) params.append('sortBy', filters.sortBy)
+      if (filters.sortOrder) params.append('sortOrder', filters.sortOrder)
+      params.append('page', page.toString())
+      params.append('limit', '20')
+
+      const res = await fetch(`/api/parts/search?${params}`)
       if (res.ok) {
         const data = await res.json()
-        setParts(data)
+        setParts(data.parts)
+        setTotalCount(data.pagination.totalCount)
+        setCurrentPage(page)
       }
     } catch (error) {
       console.error('Error fetching parts:', error)
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleSearch = (filters: PartSearchFilters) => {
+    setCurrentFilters(filters)
+    fetchParts(filters, 1)
   }
 
   const handleToggleActive = async (partId: string, isActive: boolean) => {
@@ -66,7 +84,7 @@ export default function AdminParts() {
       })
 
       if (res.ok) {
-        fetchParts()
+        fetchParts(currentFilters, currentPage)
       }
     } catch (error) {
       console.error('Error toggling part status:', error)
@@ -81,7 +99,7 @@ export default function AdminParts() {
 
       if (res.ok) {
         setDeleteDialog({ open: false, partId: null })
-        fetchParts()
+        fetchParts(currentFilters, currentPage)
       }
     } catch (error) {
       console.error('Error deleting part:', error)
@@ -97,10 +115,6 @@ export default function AdminParts() {
     }
   }
 
-  const filteredParts = parts.filter(part =>
-    part.name.toLowerCase().includes(searchTerm.toLowerCase())
-  )
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-black/30">
       {/* Header */}
@@ -108,8 +122,8 @@ export default function AdminParts() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-gold-400">
-              <span className="block">إدارة قطع الغيار</span>
-              <span className="text-sm text-muted-foreground">Manage Spare Parts</span>
+              <span className="block">إدارة قطع الغيار ({totalCount})</span>
+              <span className="text-sm text-muted-foreground">Manage Spare Parts ({totalCount})</span>
             </h1>
             <Button
               onClick={() => router.push('/admin/dashboard')}
@@ -123,24 +137,28 @@ export default function AdminParts() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {/* Actions Bar */}
+        {/* Search Bar */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
+          className="mb-6"
         >
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="بحث | Search..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pr-10 border-gold-500/30 focus:border-gold-500"
-            />
-          </div>
+          <PartSearchBar
+            onSearch={handleSearch}
+            initialFilters={currentFilters}
+            showActiveFilter={true}
+          />
+        </motion.div>
+
+        {/* Add Button */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 flex justify-end"
+        >
           <Button
             onClick={() => router.push('/admin/parts/new')}
-            className="w-full bg-gold-500 hover:bg-gold-600 text-black md:w-auto"
+            className="bg-gold-500 hover:bg-gold-600 text-black"
           >
             <Plus className="mr-2 h-4 w-4" />
             إضافة قطعة | Add Part
@@ -159,18 +177,18 @@ export default function AdminParts() {
               </Card>
             ))}
           </div>
-        ) : filteredParts.length === 0 ? (
+        ) : parts.length === 0 ? (
           <Card className="border-gold-500/20 bg-card/50 backdrop-blur">
             <CardContent className="flex flex-col items-center justify-center py-12">
               <Wrench className="mb-4 h-16 w-16 text-muted-foreground/50" />
               <p className="text-lg text-muted-foreground">
-                {searchTerm ? 'لا توجد نتائج | No results found' : 'لا توجد قطع غيار | No parts available'}
+                لا توجد نتائج مطابقة | No matching results found
               </p>
             </CardContent>
           </Card>
         ) : (
           <motion.div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {filteredParts.map((part, index) => {
+            {parts.map((part, index) => {
               const partImages = parseImages(part.images)
               return (
                 <motion.div

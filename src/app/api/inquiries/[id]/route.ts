@@ -1,19 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { devLog } from '@/lib/logger'
+import { withProtection } from '@/lib/api-protection'
 
-export async function DELETE(
+export const DELETE = withProtection(async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params
-    await db.inquiry.delete({
-      where: { id }
-    })
+) => {
+  const { id } = await params
+  await db.inquiry.delete({
+    where: { id }
+  })
 
-    return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error('Inquiry delete error:', error)
-    return NextResponse.json({ error: 'Failed to delete inquiry' }, { status: 500 })
-  }
-}
+  return NextResponse.json({ success: true })
+}, {
+  requireAuth: true,
+})

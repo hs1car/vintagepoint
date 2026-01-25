@@ -6,8 +6,8 @@ const prisma = new PrismaClient()
 async function main() {
   console.log('🔐 Creating admin user...')
 
-  const email = 'admin@vintagepoint.ae'
-  const password = 'admin123'
+  const email = 'admin'
+  const password = 'admin'
   const name = 'Admin User'
 
   // Check if admin already exists
@@ -18,7 +18,7 @@ async function main() {
   if (existingAdmin) {
     console.log('⚠️ Admin user already exists!')
     console.log(`Email: ${email}`)
-    console.log('Password: admin123 (or your existing password)')
+    console.log('Password: admin (or your existing password)')
     await prisma.$disconnect()
     return
   }

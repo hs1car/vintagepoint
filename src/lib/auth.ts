@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers'
 import { db } from '@/lib/db'
+import { devLog } from '@/lib/logger'
 
 export enum UserRole {
   ADMIN = 'ADMIN',
@@ -19,27 +20,34 @@ export async function getSessionUser(): Promise<AuthUser | null> {
     const sessionToken = cookieStore.get('admin_session')?.value
 
     if (!sessionToken) {
+      devLog.info('[getSessionUser] No session token found')
       return null
     }
 
-    const session = await db.adminUser.findFirst({
+    devLog.info('[getSessionUser] Session found')
+
+    // sessionToken is the admin user ID
+    const admin = await db.adminUser.findUnique({
       where: {
-        email: sessionToken
+        id: sessionToken
       }
     })
 
-    if (!session) {
+    if (!admin) {
+      devLog.warn('[getSessionUser] No admin found')
       return null
     }
 
+    devLog.info('[getSessionUser] Admin authenticated')
+
     return {
-      id: session.id,
-      email: session.email,
-      name: session.name,
+      id: admin.id,
+      email: admin.email,
+      name: admin.name,
       role: UserRole.ADMIN,
     }
   } catch (error) {
-    console.error('Error getting session:', error)
+    devLog.error('[getSessionUser] Error getting session:', error)
     return null
   }
 }

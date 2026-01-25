@@ -1,20 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import bcrypt from 'bcryptjs'
-import { logger, LogType } from '@/lib/logger'
+import { logger, LogType, devLog } from '@/lib/logger'
+import { applyRateLimit, createRateLimitResponse, RateLimitPresets } from '@/lib/rate-limit'
+import { loginSchema, validateData } from '@/lib/validation'
 
 export async function POST(request: NextRequest) {
+  // Rate limiting: 5 login attempts per 5 minutes
+  const rateLimit = await applyRateLimit(request, RateLimitPresets.AUTH)
+  if (!rateLimit.success) {
+    return createRateLimitResponse(rateLimit)
+  }
   const clientIP = request.headers.get('x-forwarded-for')?.split(',')[0] ||
                   request.headers.get('x-real-ip') ||
                   'unknown'
 
   try {
-    const { email, password } = await request.json()
-
-    if (!email || !password) {
-      await logger.login(email, '', clientIP, false)
-      return NextResponse.json({ error: 'Email and password are required' }, { status: 400 })
+    const body = await request.json()
+    
+    // Validate input
+    const validation = validateData(loginSchema, body)
+    if (!validation.success) {
+      await logger.login(body.email || 'unknown', '', clientIP, false)
+      return NextResponse.json({ 
+        error: 'Validation failed', 
+        details: validation.errors 
+      }, { status: 400 })
     }
+
+    const { email, password } = validation.data
 
     // Support both email and username login
     // If user enters 'vp', convert to email format
@@ -51,17 +65,18 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Set session cookie
+    // Set session cookie with maximum security
     response.cookies.set('admin_session', admin.id, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 // 24 hours
+      sameSite: 'strict', // Changed from 'lax' to 'strict' for CSRF protection
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+      path: '/'
     })
 
     return response
   } catch (error) {
-    console.error('Login error:', error)
+    devLog.error('Login error:', error)
     await logger.error('Login failed', { error: String(error) }, undefined, clientIP)
     return NextResponse.json({ error: 'Login failed' }, { status: 500 })
   }

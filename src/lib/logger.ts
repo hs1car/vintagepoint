@@ -2,6 +2,17 @@ import path from 'path'
 import { existsSync } from 'fs'
 import { mkdir, appendFile } from 'fs/promises'
 
+// Environment-aware logging
+const isDevelopment = process.env.NODE_ENV === 'development'
+
+// Safe console wrapper - only logs in development
+export const devLog = {
+  log: (...args: any[]) => isDevelopment && console.log(...args),
+  error: (...args: any[]) => console.error(...args), // Always log errors
+  warn: (...args: any[]) => isDevelopment && console.warn(...args),
+  info: (...args: any[]) => isDevelopment && console.info(...args),
+}
+
 export enum LogType {
   UPLOAD = 'UPLOAD',
   DELETE = 'DELETE',
@@ -61,9 +72,10 @@ class Logger {
       const combinedLogPath = path.join(this.logsDir, 'combined.log')
       await appendFile(combinedLogPath, logLine, 'utf-8')
 
-      console.log(`[${entry.type}] ${entry.action}`, entry.details || '')
+      // Only log to console in development
+      devLog.log(`[${entry.type}] ${entry.action}`, entry.details || '')
     } catch (error) {
-      console.error('Error writing to log file:', error)
+      devLog.error('Error writing to log file:', error)
     }
   }
 

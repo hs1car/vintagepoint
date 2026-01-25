@@ -2,13 +2,18 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { Card } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Eye, ShoppingCart, Heart, TrendingUp, Package, Car, ArrowLeft } from 'lucide-react'
-import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
+
+// Dynamic import for motion to reduce initial bundle
+const motion = {
+  div: dynamic(() => import('framer-motion').then(mod => mod.motion.div), { ssr: false })
+}
 
 interface AnalyticsData {
   overview: {

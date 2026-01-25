@@ -1,24 +1,36 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
-  /* config options here */
   typescript: {
     ignoreBuildErrors: false,
   },
   reactStrictMode: true,
-
-  // Dev Indicators Configuration (Next.js 15 compatible)
+  
+  // Production optimizations
+  compress: true,
+  poweredByHeader: false,
+  generateEtags: true,
+  
+  // Dev Indicators Configuration
   devIndicators: {
     position: 'bottom-left',
   },
   
+  // External packages for server components
+  serverExternalPackages: ['bcryptjs'],
+  
   experimental: {
-    optimizePackageImports: ['@radix-ui/react-icons', 'lucide-react', 'framer-motion'],
+    optimizePackageImports: [
+      '@radix-ui/react-icons', 
+      'lucide-react', 
+      'framer-motion',
+      'recharts',
+      'zod'
+    ],
   },
 
-  // Optimize builds
-  compress: true,
-  poweredByHeader: false,
+  // Turbopack configuration (empty to silence warning)
+  turbopack: {},
 
   // Image Optimization
   images: {
@@ -38,18 +50,23 @@ const nextConfig = {
       },
     ],
     dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days for better caching
+    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
+    unoptimized: false,
   },
 
-  // API Caching
+  // Security & Caching Headers
   async headers() {
     return [
       {
         source: '/api/:path*',
         headers: [
           { key: 'Cache-Control', value: 'public, s-maxage=60, stale-while-revalidate=300' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-Frame-Options', value: 'DENY' },
         ],
       },
       {
@@ -60,10 +77,32 @@ const nextConfig = {
         ],
       },
       {
+        source: '/_next/static/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+      {
         source: '/:path*',
         headers: [
           { key: 'X-DNS-Prefetch-Control', value: 'on' },
         ],
+      },
+    ];
+  },
+
+  // Redirects for security
+  async redirects() {
+    return [
+      {
+        source: '/.env',
+        destination: '/404',
+        permanent: true,
+      },
+      {
+        source: '/.git/:path*',
+        destination: '/404',
+        permanent: true,
       },
     ];
   },

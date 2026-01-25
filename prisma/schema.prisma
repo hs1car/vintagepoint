@@ -13,6 +13,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// NOTE: For production, change provider to "postgresql" and update DATABASE_URL
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -117,4 +119,26 @@ model AnalyticsEvent {
   @@index([eventType])
   @@index([entityType, entityId])
   @@index([createdAt])
+}
+
+model Deal {
+  id          String   @id @default(cuid())
+  title       String
+  titleAr     String?
+  description String?
+  descriptionAr String?
+  entityType  String   // "car", "part"
+  entityId    String
+  discount    Float?   // Discount percentage
+  originalPrice Float?
+  dealPrice   Float
+  startDate   DateTime @default(now())
+  endDate     DateTime
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([entityType, entityId])
+  @@index([isActive, endDate])
+  @@index([startDate, endDate])
 }

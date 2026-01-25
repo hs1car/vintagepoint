@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { devLog } from '@/lib/logger'
 
 export async function POST(request: NextRequest) {
   try {
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Track error:', error)
+    devLog.error('Track error:', error)
     return NextResponse.json({ error: 'Failed to track' }, { status: 500 })
   }
 }

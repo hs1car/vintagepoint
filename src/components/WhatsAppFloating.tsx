@@ -26,7 +26,7 @@ export function WhatsAppFloating() {
         whileTap={{ scale: 0.95 }}
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
-        className="fixed bottom-6 right-6 z-[999] flex items-center justify-center"
+        className="fixed bottom-16 right-4 z-[999] flex items-center justify-center"
       >
         {/* Pulse Effect */}
         <motion.span
@@ -39,12 +39,12 @@ export function WhatsAppFloating() {
             repeat: Infinity,
             ease: "easeInOut",
           }}
-          className="absolute w-14 h-14 rounded-full bg-gradient-to-br from-green-500 to-green-600"
+          className="absolute w-11 h-11 rounded-full bg-gradient-to-br from-green-500 to-green-600"
         />
 
         {/* WhatsApp Icon - أصغر */}
-        <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-green-500 to-green-600 text-white shadow-[0_0_15px_rgba(34,197,94,0.4),0_0_30px_rgba(34,197,94,0.3)] hover:shadow-[0_0_25px_rgba(34,197,94,0.5),0_0_40px_rgba(34,197,94,0.3)] transition-shadow duration-300 border-2 border-white/20">
-          <MessageCircle className="h-7 w-7" strokeWidth={2.5} />
+        <div className="relative flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-green-500 to-green-600 text-white shadow-[0_0_15px_rgba(34,197,94,0.4),0_0_30px_rgba(34,197,94,0.3)] hover:shadow-[0_0_25px_rgba(34,197,94,0.5),0_0_40px_rgba(34,197,94,0.3)] transition-shadow duration-300 border-2 border-white/20">
+          <MessageCircle className="h-5 w-5" strokeWidth={2.5} />
         </div>
       </motion.a>
 

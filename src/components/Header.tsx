@@ -74,10 +74,18 @@ export function Header() {
   }, [lastScrollY])
 
   const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId)
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' })
-      setMobileMenuOpen(false)
+    // Close mobile menu first
+    setMobileMenuOpen(false)
+    
+    // If we're on homepage, scroll to section
+    if (window.location.pathname === '/') {
+      const element = document.getElementById(sectionId)
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' })
+      }
+    } else {
+      // If we're on another page, navigate to homepage with hash
+      window.location.href = `/#${sectionId}`
     }
   }
 
@@ -116,12 +124,11 @@ export function Header() {
           <NavigationMenu className="hidden lg:flex">
             <NavigationMenuList>
               <NavigationMenuItem>
-                <button
-                  onClick={() => scrollToSection('home')}
-                  className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-gold-500/10 hover:text-gold-500 focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
-                >
-                  {t('nav.home')}
-                </button>
+                <Link href="/">
+                  <button className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-gold-500/10 hover:text-gold-500 focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
+                    {t('nav.home')}
+                  </button>
+                </Link>
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <Link href="/buying-guide">

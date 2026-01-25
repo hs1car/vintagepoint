@@ -82,6 +82,8 @@ export default function CarForm() {
       const url = isNew ? '/api/cars' : `/api/cars/${carId}`
       const method = isNew ? 'POST' : 'PUT'
 
+      console.log('Submitting car data:', { url, method, formData })
+
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
@@ -92,11 +94,19 @@ export default function CarForm() {
         })
       })
 
+      const data = await res.json()
+      console.log('API Response:', { status: res.status, data })
+
       if (res.ok) {
+        alert(isNew ? 'تم إضافة السيارة بنجاح! ✓\nCar added successfully!' : 'تم تحديث السيارة بنجاح! ✓\nCar updated successfully!')
         router.push('/admin/cars')
+        router.refresh()
+      } else {
+        throw new Error(data.error || 'Failed to save car')
       }
     } catch (error) {
       console.error('Error saving car:', error)
+      alert(`حدث خطأ! ✗\nError: ${error instanceof Error ? error.message : 'Unknown error'}\n\nتأكد من:\n- تسجيل الدخول\n- ملء جميع الحقول المطلوبة\n- رفع صورة واحدة على الأقل`)
     } finally {
       setLoading(false)
     }

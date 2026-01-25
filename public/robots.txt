@@ -1,8 +1,16 @@
+# Robots.txt - Vintage Point Classic Cars
+# Updated: 2026-01-25
+
+# Allow all good bots to access public pages
 User-agent: Googlebot
 Allow: /
+Disallow: /admin
+Disallow: /api/
 
 User-agent: Bingbot
 Allow: /
+Disallow: /admin
+Disallow: /api/
 
 User-agent: Twitterbot
 Allow: /
@@ -10,5 +18,40 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
+# General rules for all other bots
 User-agent: *
 Allow: /
+Allow: /cars
+Allow: /parts
+Allow: /about
+Allow: /buying-guide
+Allow: /wishlist
+
+# Block admin panel and API endpoints
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /api/
+Disallow: /api/*
+Disallow: /login
+Disallow: /auth/*
+Disallow: /upload/
+Disallow: /uploads/
+
+# Block aggressive/unwanted crawlers
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+# Crawl delay to prevent server overload
+Crawl-delay: 10
+
+# Sitemap location
+Sitemap: https://vintagepoint.ae/sitemap.xml

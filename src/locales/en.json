@@ -11,7 +11,31 @@
     "model": "Model",
     "description": "Description",
     "image": "Image",
-    "images": "Images"
+    "images": "Images",
+    "share": "Share",
+    "loading": "Loading...",
+    "error": "Error",
+    "retry": "Retry"
+  },
+  "search": {
+    "placeholder": "Search cars or parts...",
+    "searching": "Searching...",
+    "noResults": "No results found",
+    "tryDifferent": "Try different keywords",
+    "results": "Results",
+    "recentSearches": "Recent Searches",
+    "clear": "Clear"
+  },
+  "deals": {
+    "title": "Special Offers",
+    "endsIn": "Offer Ends In",
+    "ended": "Offer Ended",
+    "days": "Days",
+    "hours": "Hours",
+    "mins": "Mins",
+    "secs": "Secs",
+    "save": "Save",
+    "limitedTime": "Limited Time Offer"
   },
   "nav": {
     "home": "Home",

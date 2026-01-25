@@ -5,11 +5,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
 import { ThemeProvider } from "next-themes";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
-import { WhatsAppFloating } from "@/components/WhatsAppFloating";
 import BackToTop from "@/components/BackToTop";
 import { Toaster as Sonner } from "@/components/ui/sonner";
+import { ConditionalLayout } from "@/components/ConditionalLayout";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { GlobalErrorBoundary } from "@/components/GlobalErrorBoundary";
 
 const cairo = Cairo({
   subsets: ["arabic", "latin"],
@@ -79,21 +80,23 @@ export default function RootLayout({
       <body
         className={`${cairo.variable} font-sans antialiased bg-background text-foreground min-h-screen flex flex-col`}
       >
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-          <WishlistProvider>
-            <LanguageProvider>
-              <Header />
-              <main className="flex-1">
-                {children}
-              </main>
-              <Footer />
-              <WhatsAppFloating />
-              <BackToTop />
-              <Toaster />
-              <Sonner />
-            </LanguageProvider>
-          </WishlistProvider>
-        </ThemeProvider>
+        <GlobalErrorBoundary>
+          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+            <WishlistProvider>
+              <LanguageProvider>
+                <ErrorBoundary>
+                  <ConditionalLayout>
+                    {children}
+                  </ConditionalLayout>
+                  <BackToTop />
+                  <MobileBottomNav />
+                  <Toaster />
+                  <Sonner />
+                </ErrorBoundary>
+              </LanguageProvider>
+            </WishlistProvider>
+          </ThemeProvider>
+        </GlobalErrorBoundary>
       </body>
     </html>
   );

@@ -11,7 +11,31 @@
     "model": "الموديل | Model",
     "description": "الوصف | Description",
     "image": "صورة | Image",
-    "images": "صور | Images"
+    "images": "صور | Images",
+    "share": "مشاركة | Share",
+    "loading": "جاري التحميل... | Loading...",
+    "error": "خطأ | Error",
+    "retry": "إعادة المحاولة | Retry"
+  },
+  "search": {
+    "placeholder": "ابحث عن سيارات أو قطع غيار... | Search cars or parts...",
+    "searching": "جاري البحث... | Searching...",
+    "noResults": "لا توجد نتائج | No results found",
+    "tryDifferent": "جرب كلمات مختلفة | Try different keywords",
+    "results": "النتائج | Results",
+    "recentSearches": "عمليات بحث سابقة | Recent Searches",
+    "clear": "مسح | Clear"
+  },
+  "deals": {
+    "title": "عروض خاصة | Special Offers",
+    "endsIn": "ينتهي العرض خلال | Offer Ends In",
+    "ended": "انتهى العرض | Offer Ended",
+    "days": "يوم | Days",
+    "hours": "ساعة | Hours",
+    "mins": "دقيقة | Mins",
+    "secs": "ثانية | Secs",
+    "save": "وفر | Save",
+    "limitedTime": "عرض لفترة محدودة | Limited Time Offer"
   },
   "nav": {
     "home": "الرئيسية | Home",

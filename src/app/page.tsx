@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import dynamic from 'next/dynamic'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, Phone, Mail, MapPin, Clock, Car, Wrench, X, Eye, ChevronDown, ChevronUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -11,6 +12,13 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { WishlistButton } from '@/components/WishlistButton'
 import CarSkeleton from '@/components/CarSkeleton'
 import { toast } from 'sonner'
+import { PageLoader } from '@/components/Loaders'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
+
+// Dynamic imports for heavy components
+const SmartSearch = dynamic(() => import('@/components/SmartSearch').then(mod => ({ default: mod.SmartSearch })), { ssr: false })
+const ShareButtons = dynamic(() => import('@/components/ShareButtons').then(mod => ({ default: mod.ShareButtons })), { ssr: false })
+const FAQSection = dynamic(() => import('@/components/FAQSection').then(mod => ({ default: mod.FAQSection })), { ssr: false })
 
 interface Car {
   id: string
@@ -168,6 +176,17 @@ export default function Home() {
             <span className="block drop-shadow-[0_0_20px_rgba(0,0,0,1)] [text-shadow:_0_2px_10px_rgb(0_0_0),_0_4px_20px_rgb(0_0_0),_1px_1px_3px_rgb(0_0_0)] font-semibold">اكتشف مجموعتنا المختارة بعناية من السيارات الكلاسيكية النادرة</span>
             <span className="block text-xs sm:text-sm text-[#E8E8E8] drop-shadow-[0_0_15px_rgba(0,0,0,1)] [text-shadow:_0_2px_8px_rgb(0_0_0),_0_3px_15px_rgb(0_0_0),_1px_1px_2px_rgb(0_0_0)] mt-1">Discover our carefully curated collection of rare classic cars</span>
           </motion.p>
+
+          {/* Smart Search */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="mb-8 max-w-3xl mx-auto"
+          >
+            <SmartSearch />
+          </motion.div>
+
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -449,6 +468,15 @@ export default function Home() {
                                 <Phone className="h-5 w-5 group-hover:scale-110 transition-transform" />
                                 <span className="drop-shadow-sm">{t('cars.whatsapp')}</span>
                               </a>
+                            </div>
+
+                            {/* Share Button */}
+                            <div className="mt-3">
+                              <ShareButtons
+                                title={`${car.model} ${car.year}`}
+                                description={car.description || `${car.condition} classic car`}
+                                url={`/cars/${car.id}`}
+                              />
                             </div>
                           </CardContent>
                           
@@ -887,6 +915,9 @@ export default function Home() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* FAQ Section */}
+      <FAQSection />
     </div>
   )
 }

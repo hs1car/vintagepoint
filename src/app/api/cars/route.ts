@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { requireAuth } from '@/lib/auth'
+import { applyRateLimit, createRateLimitResponse, RateLimitPresets } from '@/lib/rate-limit'
+import { carCreateSchema, validateData } from '@/lib/validation'
+import { devLog } from '@/lib/logger'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Rate limiting: 100 requests per minute
+  const rateLimit = await applyRateLimit(request, RateLimitPresets.RELAXED)
+  if (!rateLimit.success) {
+    return createRateLimitResponse(rateLimit)
+  }
   try {
     const cars = await db.car.findMany({
       where: { isActive: true },
@@ -9,38 +18,38 @@ export async function GET() {
     })
     return NextResponse.json(cars)
   } catch (error) {
-    console.error('Error fetching cars:', error)
+    devLog.error('Error fetching cars:', error)
     return NextResponse.json({ error: 'Failed to fetch cars' }, { status: 500 })
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { model, year, condition, price, description, images } = body
-    
-    console.log('[POST /api/cars] Received:', { model, year, condition, price, description, images })
+    // Verify authentication
+    await requireAuth()
 
-    if (!model || !year || !condition) {
-      console.log('[POST /api/cars] Missing fields:', { model, year, condition })
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    const body = await request.json()
+    
+    // Validate input with Zod
+    const validation = validateData(carCreateSchema, body)
+    if (!validation.success) {
+      return NextResponse.json({ 
+        error: 'Validation failed', 
+        details: validation.errors 
+      }, { status: 400 })
     }
 
     const car = await db.car.create({
-      data: {
-        model,
-        year: parseInt(year),
-        condition,
-        price: price ? parseFloat(price) : null,
-        description: description || '',
-        images: Array.isArray(images) ? JSON.stringify(images) : (images || '[]'),
-      },
+      data: validation.data,
     })
 
-    console.log('[POST /api/cars] Car created:', car.id)
+    devLog.info('[POST /api/cars] Car created successfully:', car.id)
     return NextResponse.json(car, { status: 201 })
   } catch (error) {
-    console.error('Error creating car:', error)
-    return NextResponse.json({ error: 'Failed to create car' }, { status: 500 })
+    devLog.error('Error creating car:', error)
+    return NextResponse.json({ 
+      error: 'Failed to create car',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
   }
 }

@@ -3,9 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Plus, Edit2, Trash2, Search, Power, PowerOff, Filter, X } from 'lucide-react'
+import { Plus, Edit2, Trash2, Power, PowerOff, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import {
   AlertDialog,
@@ -17,15 +16,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { CarSearchBar, type CarSearchFilters } from '@/components/admin/CarSearchBar'
 
 interface Car {
   id: string
@@ -38,55 +31,59 @@ interface Car {
   isActive: boolean
 }
 
-interface FilterOptions {
-  search: string
-  minPrice: string
-  maxPrice: string
-  minYear: string
-  maxYear: string
-  condition: string
-  status: 'all' | 'active' | 'inactive'
-  sortBy: 'newest' | 'oldest' | 'price-low' | 'price-high'
-}
-
 export default function AdminCars() {
   const { t } = useLanguage()
   const router = useRouter()
   const [cars, setCars] = useState<Car[]>([])
   const [loading, setLoading] = useState(true)
-  const [showFilters, setShowFilters] = useState(false)
+  const [totalCount, setTotalCount] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; carId: string | null }>({
     open: false,
     carId: null
   })
 
-  const [filters, setFilters] = useState<FilterOptions>({
-    search: '',
-    minPrice: '',
-    maxPrice: '',
-    minYear: '',
-    maxYear: '',
-    condition: 'all',
-    status: 'all',
-    sortBy: 'newest'
+  const [currentFilters, setCurrentFilters] = useState<CarSearchFilters>({
+    q: '',
+    sortBy: 'createdAt',
+    sortOrder: 'desc'
   })
 
   useEffect(() => {
-    fetchCars()
+    fetchCars(currentFilters, currentPage)
   }, [])
 
-  const fetchCars = async () => {
+  const fetchCars = async (filters: CarSearchFilters, page: number = 1) => {
+    setLoading(true)
     try {
-      const res = await fetch('/api/cars')
+      const params = new URLSearchParams()
+      if (filters.q) params.set('q', filters.q)
+      if (filters.minYear) params.set('minYear', filters.minYear.toString())
+      if (filters.maxYear) params.set('maxYear', filters.maxYear.toString())
+      if (filters.condition && filters.condition !== 'all') params.set('condition', filters.condition)
+      if (filters.isActive !== undefined) params.set('isActive', filters.isActive.toString())
+      params.set('sortBy', filters.sortBy)
+      params.set('sortOrder', filters.sortOrder)
+      params.set('page', page.toString())
+      params.set('limit', '20')
+
+      const res = await fetch(`/api/cars/search?${params.toString()}`)
       if (res.ok) {
         const data = await res.json()
-        setCars(data)
+        setCars(data.cars)
+        setTotalCount(data.pagination.totalCount)
+        setCurrentPage(page)
       }
     } catch (error) {
       console.error('Error fetching cars:', error)
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleSearch = (filters: CarSearchFilters) => {
+    setCurrentFilters(filters)
+    fetchCars(filters, 1)
   }
 
   const handleToggleActive = async (carId: string, isActive: boolean) => {
@@ -98,7 +95,7 @@ export default function AdminCars() {
       })
 
       if (res.ok) {
-        fetchCars()
+        fetchCars(currentFilters, currentPage)
       }
     } catch (error) {
       console.error('Error toggling car status:', error)
@@ -113,7 +110,7 @@ export default function AdminCars() {
 
       if (res.ok) {
         setDeleteDialog({ open: false, carId: null })
-        fetchCars()
+        fetchCars(currentFilters, currentPage)
       }
     } catch (error) {
       console.error('Error deleting car:', error)
@@ -129,264 +126,53 @@ export default function AdminCars() {
     }
   }
 
-  const filterAndSortCars = (cars: Car[]): Car[] => {
-    let filtered = [...cars]
-
-    // Search filter
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase()
-      filtered = filtered.filter(car =>
-        car.model.toLowerCase().includes(searchLower) ||
-        car.year.toString().includes(searchLower) ||
-        car.description?.toLowerCase().includes(searchLower)
-      )
-    }
-
-    // Price range filter
-    if (filters.minPrice) {
-      filtered = filtered.filter(car => car.price >= Number(filters.minPrice))
-    }
-    if (filters.maxPrice) {
-      filtered = filtered.filter(car => car.price <= Number(filters.maxPrice))
-    }
-
-    // Year range filter
-    if (filters.minYear) {
-      filtered = filtered.filter(car => car.year >= Number(filters.minYear))
-    }
-    if (filters.maxYear) {
-      filtered = filtered.filter(car => car.year <= Number(filters.maxYear))
-    }
-
-    // Condition filter
-    if (filters.condition !== 'all') {
-      filtered = filtered.filter(car => car.condition === filters.condition)
-    }
-
-    // Status filter
-    if (filters.status === 'active') {
-      filtered = filtered.filter(car => car.isActive)
-    } else if (filters.status === 'inactive') {
-      filtered = filtered.filter(car => !car.isActive)
-    }
-
-    // Sort
-    switch (filters.sortBy) {
-      case 'newest':
-        filtered.sort((a, b) => b.id.localeCompare(a.id))
-        break
-      case 'oldest':
-        filtered.sort((a, b) => a.id.localeCompare(b.id))
-        break
-      case 'price-low':
-        filtered.sort((a, b) => a.price - b.price)
-        break
-      case 'price-high':
-        filtered.sort((a, b) => b.price - a.price)
-        break
-    }
-
-    return filtered
-  }
-
-  const filteredCars = filterAndSortCars(cars)
-
-  const clearFilters = () => {
-    setFilters({
-      search: '',
-      minPrice: '',
-      maxPrice: '',
-      minYear: '',
-      maxYear: '',
-      condition: 'all',
-      status: 'all',
-      sortBy: 'newest'
-    })
-  }
-
-  const hasActiveFilters = filters.search || filters.minPrice || filters.maxPrice || filters.minYear || filters.maxYear || filters.condition !== 'all' || filters.status !== 'all'
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-black/30">
       {/* Header */}
       <header className="border-b border-gold-500/20 bg-card/50 backdrop-blur">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gold-400">
-              <span className="block">إدارة السيارات</span>
-              <span className="text-sm text-muted-foreground">Manage Cars</span>
-            </h1>
-            <Button
-              onClick={() => router.push('/admin/dashboard')}
-              variant="ghost"
-              className="text-gold-500"
-            >
-              العودة للرئيسية | Back to Dashboard
-            </Button>
+            <div>
+              <h1 className="text-2xl font-bold text-gold-400">
+                <span className="block">إدارة السيارات</span>
+                <span className="text-sm text-muted-foreground">Manage Cars</span>
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                إجمالي السيارات: {totalCount}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => router.push('/admin/cars/new')}
+                className="bg-gold-500 hover:bg-gold-600 text-black font-bold shadow-lg shadow-gold-500/50"
+              >
+                <Plus className="mr-2 h-5 w-5" />
+                إضافة سيارة
+              </Button>
+              <Button
+                onClick={() => router.push('/admin/dashboard')}
+                variant="ghost"
+                className="text-gold-500"
+              >
+                العودة للرئيسية
+              </Button>
+            </div>
           </div>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {/* Actions Bar */}
+        {/* Search Bar */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-6 space-y-4"
+          className="mb-6"
         >
-          {/* Search and Add */}
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="بحث | Search..."
-                value={filters.search}
-                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                className="pr-10 border-gold-500/30 focus:border-gold-500"
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button
-                onClick={() => setShowFilters(!showFilters)}
-                variant={showFilters ? 'default' : 'outline'}
-                className={showFilters ? 'bg-gold-500 text-black' : 'border-gold-500/50 text-gold-500'}
-              >
-                <Filter className="mr-2 h-4 w-4" />
-                فلاتر | Filters
-              </Button>
-              {hasActiveFilters && (
-                <Button
-                  onClick={clearFilters}
-                  variant="outline"
-                  className="border-red-500/50 text-red-500 hover:bg-red-500/10"
-                >
-                  <X className="mr-2 h-4 w-4" />
-                  مسح الفلاتر | Clear
-                </Button>
-              )}
-              <Button
-                onClick={() => router.push('/admin/cars/new')}
-                className="bg-gold-500 hover:bg-gold-600 text-black"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                إضافة سيارة | Add Car
-              </Button>
-            </div>
-          </div>
-
-          {/* Advanced Filters */}
-          {showFilters && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              className="rounded-lg border border-gold-500/20 bg-card/50 p-4"
-            >
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                {/* Price Range */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">السعر | Price</label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      placeholder="Min"
-                      value={filters.minPrice}
-                      onChange={(e) => setFilters({ ...filters, minPrice: e.target.value })}
-                      className="border-gold-500/30"
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Max"
-                      value={filters.maxPrice}
-                      onChange={(e) => setFilters({ ...filters, maxPrice: e.target.value })}
-                      className="border-gold-500/30"
-                    />
-                  </div>
-                </div>
-
-                {/* Year Range */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">السنة | Year</label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      placeholder="Min"
-                      value={filters.minYear}
-                      onChange={(e) => setFilters({ ...filters, minYear: e.target.value })}
-                      className="border-gold-500/30"
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Max"
-                      value={filters.maxYear}
-                      onChange={(e) => setFilters({ ...filters, maxYear: e.target.value })}
-                      className="border-gold-500/30"
-                    />
-                  </div>
-                </div>
-
-                {/* Condition */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">الحالة | Condition</label>
-                  <Select
-                    value={filters.condition}
-                    onValueChange={(value) => setFilters({ ...filters, condition: value })}
-                  >
-                    <SelectTrigger className="border-gold-500/30">
-                      <SelectValue placeholder="الكل | All" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">الكل | All</SelectItem>
-                      <SelectItem value="Excellent">ممتاز | Excellent</SelectItem>
-                      <SelectItem value="Very Good">جيد جداً | Very Good</SelectItem>
-                      <SelectItem value="Good">جيد | Good</SelectItem>
-                      <SelectItem value="Fair">مقبول | Fair</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Status & Sort */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">الحالة & الترتيب | Status & Sort</label>
-                  <div className="flex gap-2">
-                    <Select
-                      value={filters.status}
-                      onValueChange={(value) => setFilters({ ...filters, status: value as any })}
-                    >
-                      <SelectTrigger className="border-gold-500/30">
-                        <SelectValue placeholder="الكل | All" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">الكل | All</SelectItem>
-                        <SelectItem value="active">نشط | Active</SelectItem>
-                        <SelectItem value="inactive">غير نشط | Inactive</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Select
-                      value={filters.sortBy}
-                      onValueChange={(value) => setFilters({ ...filters, sortBy: value as any })}
-                    >
-                      <SelectTrigger className="border-gold-500/30">
-                        <SelectValue placeholder="ترتيب | Sort" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="newest">الأحدث | Newest</SelectItem>
-                        <SelectItem value="oldest">الأقدم | Oldest</SelectItem>
-                        <SelectItem value="price-low">الأقل سعراً | Price Low</SelectItem>
-                        <SelectItem value="price-high">الأعلى سعراً | Price High</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Results Count */}
-              <div className="mt-4 pt-4 border-t border-gold-500/10">
-                <p className="text-sm text-muted-foreground">
-                  {filteredCars.length} سيارة | {filteredCars.length} Cars {filteredCars.length !== cars.length && `(من ${cars.length} total)`}
-                </p>
-              </div>
-            </motion.div>
-          )}
+          <CarSearchBar
+            onSearch={handleSearch}
+            initialFilters={currentFilters}
+            showActiveFilter={true}
+          />
         </motion.div>
 
         {loading ? (
@@ -401,27 +187,18 @@ export default function AdminCars() {
               </Card>
             ))}
           </div>
-        ) : filteredCars.length === 0 ? (
+        ) : cars.length === 0 ? (
           <Card className="border-gold-500/20 bg-card/50 backdrop-blur">
             <CardContent className="flex flex-col items-center justify-center py-12">
               <Search className="mb-4 h-16 w-16 text-muted-foreground/50" />
               <p className="text-lg text-muted-foreground text-center">
-                {hasActiveFilters ? 'لا توجد نتائج مطابقة للفلاتر | No matching results found' : 'لا توجد سيارات | No cars available'}
+                لا توجد نتائج مطابقة | No matching results found
               </p>
-              {hasActiveFilters && (
-                <Button
-                  onClick={clearFilters}
-                  variant="outline"
-                  className="mt-4 border-gold-500/50 text-gold-500"
-                >
-                  مسح الفلاتر | Clear Filters
-                </Button>
-              )}
             </CardContent>
           </Card>
         ) : (
           <motion.div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredCars.map((car, index) => {
+            {cars.map((car, index) => {
               const carImages = parseImages(car.images)
               return (
                 <motion.div

@@ -5,6 +5,8 @@ import path from 'path'
 import { randomUUID } from 'crypto'
 import { createHash } from 'crypto'
 import sharp from 'sharp'
+import { applyRateLimit, createRateLimitResponse, RateLimitPresets } from '@/lib/rate-limit'
+import { devLog } from '@/lib/logger'
 
 // Allowed file types and their magic numbers
 const FILE_SIGNATURES = {
@@ -120,7 +122,7 @@ async function validateImageDimensions(buffer: Buffer): Promise<boolean> {
 
     return true
   } catch (error) {
-    console.error('Error validating image dimensions:', error)
+    devLog.error('Error validating image dimensions:', error)
     return false
   }
 }
@@ -159,21 +161,18 @@ async function logUpload(filename: string, size: number, type: string, ip: strin
 
     await appendFile(logFile, logLine, 'utf-8')
   } catch (error) {
-    console.error('Error logging upload:', error)
+    devLog.error('Error logging upload:', error)
   }
 }
 
 export async function POST(request: NextRequest) {
-  const clientIP = getClientIP(request)
-
-  // Rate limiting
-  if (!checkRateLimit(clientIP)) {
-    await logUpload('', 0, '', clientIP, false)
-    return NextResponse.json(
-      { error: 'Rate limit exceeded. Please try again later.' },
-      { status: 429 }
-    )
+  // Rate limiting: 10 uploads per 5 minutes
+  const rateLimit = await applyRateLimit(request, RateLimitPresets.UPLOAD)
+  if (!rateLimit.success) {
+    return createRateLimitResponse(rateLimit)
   }
+
+  const clientIP = getClientIP(request)
 
   try {
     const formData = await request.formData()
@@ -252,24 +251,49 @@ export async function POST(request: NextRequest) {
       await mkdir(uploadDir, { recursive: true })
     }
 
-    // Save file
-    await writeFile(filePath, buffer)
+    // Process image: resize, optimize, convert to WebP
+    const webpFileName = `${randomUUID()}.webp`
+    const webpFilePath = path.join(uploadDir, webpFileName)
+    
+    try {
+      await sharp(buffer)
+        .resize(MAX_IMAGE_WIDTH, MAX_IMAGE_HEIGHT, { 
+          fit: 'inside',
+          withoutEnlargement: true 
+        })
+        .webp({ 
+          quality: 85,  // High quality WebP
+          effort: 4     // Balanced compression effort
+        })
+        .toFile(webpFilePath)
+    } catch (sharpError) {
+      // Fallback: save original if sharp fails
+      await writeFile(filePath, buffer)
+      await logUpload(fileName, file.size, file.type, clientIP, true)
+      return NextResponse.json({
+        success: true,
+        url: `/uploads/${fileName}`,
+        fileName,
+        size: file.size,
+        type: file.type,
+        optimized: false
+      })
+    }
 
     // Log successful upload
-    await logUpload(fileName, file.size, file.type, clientIP, true)
+    await logUpload(webpFileName, file.size, 'image/webp', clientIP, true)
 
-    // Return URL
-    const fileUrl = `/uploads/${fileName}`
-
+    // Return WebP URL
     return NextResponse.json({
       success: true,
-      url: fileUrl,
-      fileName,
-      size: file.size,
-      type: file.type
+      url: `/uploads/${webpFileName}`,
+      fileName: webpFileName,
+      originalSize: file.size,
+      type: 'image/webp',
+      optimized: true
     })
   } catch (error) {
-    console.error('Upload error:', error)
+    devLog.error('Upload error:', error)
     const clientIP = getClientIP(request)
     await logUpload('', 0, '', clientIP, false)
     return NextResponse.json(

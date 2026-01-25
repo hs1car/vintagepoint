@@ -1,5 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { devLog } from '@/lib/logger'
+import { withProtection } from '@/lib/api-protection'
+import { z } from 'zod'
+
+const partUpdateSchema = z.object({
+  name: z.string().min(1).max(200).optional(),
+  description: z.string().optional(),
+  price: z.number().positive().or(z.string().regex(/^\d+(\.\d{1,2})?$/)).optional(),
+  images: z.union([z.string(), z.array(z.string())]).optional(),
+  isActive: z.boolean().optional(),
+})
 
 export async function GET(
   request: NextRequest,
@@ -17,51 +28,46 @@ export async function GET(
 
     return NextResponse.json(part)
   } catch (error) {
-    console.error('Error fetching part:', error)
+    devLog.error('Error fetching part:', error)
     return NextResponse.json({ error: 'Failed to fetch part' }, { status: 500 })
   }
 }
 
-export async function PUT(
+export const PUT = withProtection(async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params
-    const body = await request.json()
-    const { name, description, price, images, isActive } = body
+) => {
+  const { id } = await params
+  const body = await request.json()
+  const { name, description, price, images, isActive } = body
 
-    const part = await db.sparePart.update({
-      where: { id },
-      data: {
-        ...(name && { name }),
-        ...(description !== undefined && { description }),
-        ...(price !== undefined && { price: parseFloat(price) }),
-        ...(images && { images: Array.isArray(images) ? JSON.stringify(images) : images }),
-        ...(isActive !== undefined && { isActive }),
-      },
-    })
+  const part = await db.sparePart.update({
+    where: { id },
+    data: {
+      ...(name && { name }),
+      ...(description !== undefined && { description }),
+      ...(price !== undefined && { price: typeof price === 'string' ? parseFloat(price) : price }),
+      ...(images && { images: Array.isArray(images) ? JSON.stringify(images) : images }),
+      ...(isActive !== undefined && { isActive }),
+    },
+  })
 
-    return NextResponse.json(part)
-  } catch (error) {
-    console.error('Error updating part:', error)
-    return NextResponse.json({ error: 'Failed to update part' }, { status: 500 })
-  }
-}
+  return NextResponse.json(part)
+}, {
+  requireAuth: true,
+  validation: partUpdateSchema,
+})
 
-export async function DELETE(
+export const DELETE = withProtection(async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params
-    await db.sparePart.delete({
-      where: { id },
-    })
+) => {
+  const { id } = await params
+  await db.sparePart.delete({
+    where: { id },
+  })
 
-    return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error('Error deleting part:', error)
-    return NextResponse.json({ error: 'Failed to delete part' }, { status: 500 })
-  }
-}
+  return NextResponse.json({ success: true })
+}, {
+  requireAuth: true,
+})

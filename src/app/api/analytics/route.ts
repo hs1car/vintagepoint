@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { devLog } from '@/lib/logger'
 
 export async function GET() {
   try {
@@ -133,7 +134,7 @@ export async function GET() {
       })),
     })
   } catch (error) {
-    console.error('Analytics error:', error)
+    devLog.error('Analytics error:', error)
     return NextResponse.json({ error: 'Failed to fetch analytics' }, { status: 500 })
   }
 }
