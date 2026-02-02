@@ -68,3 +68,4 @@ public/uploads/*
 !public/uploads/.gitkeep
 
 certificates
+.env
